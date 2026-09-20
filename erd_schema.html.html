@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="th" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RIZENIC ERP — Entity Relationship Diagram (ERD) & Schema Documentation</title>
+
+    <!-- CDNs -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Mermaid.js for Rendering Diagrams -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --navy: #0F172A;
+            --blue: #2563EB;
+            --slate: #64748B;
+            --light: #F8FAFC;
+        }
+
+        body {
+            font-family: 'Prompt', sans-serif;
+            background-color: var(--light);
+            color: var(--navy);
+            line-height: 1.6;
+        }
+
+        .font-mono-code {
+            font-family: 'Fira Code', monospace;
+        }
+
+        ::-webkit-scrollbar { width: 7px; height: 7px; }
+        ::-webkit-scrollbar-track { background: #F1F5F9; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+        @media print {
+            nav, button, .no-print { display: none !important; }
+            body { background: white !important; color: black !important; }
+            .shadow-xl, .shadow-md, .shadow-sm { box-shadow: none !important; }
+            section { page-break-inside: avoid; }
+            #erd-container { height: auto !important; overflow: visible !important; }
+            #erd-wrapper { transform: none !important; display: block !important; }
+        }
+
+        /* ตารางพื้นหลังเพื่อช่วยดูระยะสายตาตอนลากจอ */
+        .bg-grid {
+            background-size: 40px 40px;
+            background-image: linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-blue-600 selection:text-white">
+
+    <!-- NAVIGATION -->
+    <nav class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200/80 px-6 py-4 no-print">
+        <div class="max-w-[1600px] mx-auto flex justify-between items-center">
+            <a href="index.html" class="flex items-center gap-2 font-bold text-slate-800 hover:text-blue-600 transition">
+                <i class="fa-solid fa-arrow-left text-sm"></i>
+                <span>กลับสู่ Portfolio หลัก</span>
+            </a>
+            <div class="flex items-center gap-3">
+                <span class="text-xs font-mono font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full">
+                    PostgreSQL Full Schema (Latest)
+                </span>
+                <button onclick="window.print()" class="bg-[#0F172A] hover:bg-blue-600 text-white px-4 py-2 rounded-full font-bold text-xs shadow-md transition flex items-center gap-1.5 cursor-pointer">
+                    <i class="fa-solid fa-file-pdf"></i> พิมพ์ / Save as PDF
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HEADER SECTION -->
+    <header class="bg-[#0F172A] text-white py-14 border-b border-slate-800">
+        <div class="max-w-[1600px] mx-auto px-6">
+            <div class="inline-flex items-center gap-2 bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1 rounded-full text-xs font-mono mb-4">
+                <i class="fa-solid fa-database"></i> SYSTEM ARCHITECTURE & FULL DATA MODELING
+            </div>
+            <h1 class="text-3xl md:text-5xl font-extrabold mb-3">RIZENIC ERP — Full Entity Relationship Diagram</h1>
+            <p class="text-slate-400 text-sm md:text-base font-light max-w-3xl">
+                แผนผังโครงสร้างข้อมูลเชิงสัมพันธ์ครอบคลุมทุกตารางจากฐานข้อมูล Neon DB 
+                แสดงตารางหลัก ตาราง Master Data และตารางส่วนขยาย e-Claim
+            </p>
+        </div>
+    </header>
+
+    <!-- ขยาย Container เป็น max-w-[1600px] เพื่อความกว้างสูงสุด -->
+    <main class="max-w-[1600px] mx-auto px-6 py-12 space-y-16">
+
+        <!-- SECTION 1: INTERACTIVE MERMAID DIAGRAM -->
+        <section class="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 shadow-sm">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-slate-100 pb-5 gap-4">
+                <div>
+                    <span class="text-xs font-bold text-blue-600 tracking-widest uppercase">Visual Model (Drag & Zoom)</span>
+                    <h2 class="text-2xl font-extrabold text-[#0F172A] mt-1">1. Full ERD Interactive Visual Diagram</h2>
+                    <p class="text-xs text-slate-500 mt-1"><i class="fa-solid fa-mouse"></i> เลื่อนลูกกลิ้งเมาส์เพื่อซูมเข้า-ออก | <i class="fa-solid fa-hand"></i> คลิกค้างเพื่อลากแผนภาพ</p>
+                </div>
+                
+                <!-- เครื่องมือควบคุมแผนภาพ (Toolbar) -->
+                <div class="flex items-center gap-2 no-print bg-slate-50 p-1.5 rounded-xl border border-slate-200 shadow-sm">
+                    <button onclick="zoom(0.2)" class="px-3 py-1.5 bg-white text-slate-700 hover:text-blue-600 font-bold text-xs rounded-lg shadow-sm border border-slate-200 transition-colors" title="ซูมเข้า">
+                        <i class="fa-solid fa-magnifying-glass-plus"></i>
+                    </button>
+                    <button onclick="zoom(-0.2)" class="px-3 py-1.5 bg-white text-slate-700 hover:text-blue-600 font-bold text-xs rounded-lg shadow-sm border border-slate-200 transition-colors" title="ซูมออก">
+                        <i class="fa-solid fa-magnifying-glass-minus"></i>
+                    </button>
+                    <button onclick="resetZoomPan()" class="px-3 py-1.5 bg-white text-slate-700 hover:text-blue-600 font-bold text-xs rounded-lg shadow-sm border border-slate-200 transition-colors">
+                        <i class="fa-solid fa-compress"></i> รีเซ็ต
+                    </button>
+                    <button onclick="toggleFullScreen()" class="px-4 py-1.5 bg-[#0F172A] text-white hover:bg-blue-600 font-bold text-xs rounded-lg shadow-md transition-colors flex items-center gap-1.5 ml-2">
+                        <i class="fa-solid fa-expand"></i> ดูเต็มจอ
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4 text-xs font-mono mb-4 justify-end">
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-blue-600"></span> Primary Key (PK)</span>
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500"></span> Foreign Key (FK)</span>
+            </div>
+
+            <!-- FULL MERMAID GRAPH (PAN & ZOOM CONTAINER) -->
+            <div id="erd-container" class="bg-slate-100 bg-grid border border-slate-300 rounded-2xl overflow-hidden relative shadow-inner" style="height: 75vh; cursor: grab;">
+                <div id="erd-wrapper" class="w-full h-full flex items-center justify-center transition-transform duration-100 ease-out origin-center">
+                    <div class="p-8 bg-white/90 backdrop-blur rounded-2xl shadow-xl border border-slate-200 min-w-max">
+                        <pre class="mermaid text-center">
+erDiagram
+    rizenicreport {
+        bigint id PK
+        date contact_date
+        date appointment_date
+        varchar customer_type
+        varchar customer_name
+        varchar phone_number
+        varchar car_plate
+        varchar car_brand
+        varchar car_model
+        varchar vin_no
+        varchar payment_type
+        varchar sa_owner
+        varchar damage_level
+        varchar main_part_name
+        int main_part_qty
+        varchar sub_part_name
+        int sub_part_qty
+        numeric cost_labor
+        numeric cost_part
+        numeric cost_external
+        varchar job_status
+        date expected_finish_date
+        date actual_finish_date
+        date delivery_date
+        varchar quotation_no
+        varchar job_order_no
+        varchar ivn_no
+        varchar notes
+        timestamp created_at
+        date target_finish_date
+        varchar customer_phone
+        varchar branch_name
+        date arrived_date
+        varchar station_kho
+        varchar station_pou
+        varchar station_puan
+        varchar station_pon
+        varchar station_prak
+        varchar station_kat
+        varchar station_qc
+        varchar station_mag
+        varchar station_kraj
+        varchar station_film
+        varchar station_pak
+        varchar station_ready
+        varchar repair_notes
+        date repair_finish_date
+        varchar qt_no
+        varchar so_no
+        varchar bl_no
+        varchar epc_no
+        varchar part_status
+        date order_part_date
+        date est_part_date
+        varchar ordered_part_names
+        varchar department_routing
+        date insurance_pay_date
+        varchar is_parked
+        date billing_date
+        varchar car_color
+        varchar claim_no
+        varchar complain_note
+    }
+
+    eclaim_general {
+        int id PK
+        varchar job_id FK
+        varchar car_province_code
+        varchar car_type_code
+        varchar trim_level
+        int mileage
+        int engine_cc
+        varchar car_condition
+        varchar party_type
+        varchar accident_no
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    eclaim_line_items {
+        int id PK
+        varchar job_id FK
+        varchar item_type
+        varchar part_no
+        varchar description_th
+        numeric qty
+        numeric unit_price
+        numeric discount
+        numeric total_price
+        varchar remark
+        timestamp created_at
+    }
+
+    inspection_reports {
+        int id PK
+        varchar job_id FK
+        varchar car_plate
+        varchar branch_name
+        int fuel_level
+        numeric current_mileage
+        varchar job_type
+        varchar job_category
+        jsonb repair_checklist
+        jsonb inventory_checklist
+        jsonb electrical_checklist
+        varchar car_diagram_image
+        varchar fuel_gauge_image
+        varchar customer_signature
+        varchar inspector_signature
+        varchar customer_signature_delivery
+        varchar inspector_signature_delivery
+        varchar notes
+        timestamp created_at
+        timestamp updated_at
+        varchar claim_no
+    }
+
+    rizenic_part_orders {
+        int order_id PK
+        varchar qt_no
+        varchar so_no
+        varchar epc_no
+        date order_date
+        date est_arrival_date
+        date received_date
+        time_without_time_zone order_time
+        varchar car_plate
+        varchar vin_no
+        varchar car_model
+        varchar part_no
+        varchar part_main_no
+        int qty_ordered
+        int qty_received
+        varchar order_status
+        varchar part_name
+        varchar part_type
+        varchar branch_name
+        varchar notes
+        timestamp created_at
+        varchar report_id
+        varchar job_id FK
+    }
+
+    rizenic_part_inbound {
+        int inbound_id PK
+        date received_date
+        varchar epc_no
+        varchar part_no
+        varchar part_main_no
+        varchar part_name
+        varchar car_model
+        int qty
+        numeric unit_price
+        varchar branch_name
+        timestamp created_at
+    }
+
+    rizenic_part_outbound {
+        int outbound_id PK
+        date issue_date
+        varchar part_no
+        varchar part_main_no
+        varchar part_name
+        int qty
+        varchar car_plate
+        varchar qt_no
+        varchar so_no
+        numeric unit_price
+        numeric total_price
+        varchar part_type
+        varchar car_model
+        varchar job_status
+        varchar branch_name
+        timestamp created_at
+        int job_id FK
+    }
+
+    rizenicpartsmaster {
+        int part_id PK
+        varchar part_main_no
+        varchar part_no
+        varchar part_name
+        varchar car_model
+        varchar part_category
+        numeric unit_price
+        timestamp created_at
+    }
+
+    rizenic_part_locations {
+        int id PK
+        varchar part_no FK
+        varchar branch_name
+        varchar location
+        int safety_stock
+    }
+
+    rizenicemployeemaster {
+        bigint employee_id PK
+        varchar employee_code
+        varchar employee_name
+        varchar employee_role
+        varchar employee_phone
+        boolean is_active
+        varchar branch_name
+        varchar username
+        varchar password
+        varchar accessible_pages
+    }
+
+    rizenic_quotas {
+        int id PK
+        varchar quota_type
+        date quota_date
+        varchar branch_name
+        int quota_arrived
+        int quota_target
+        int quota_delivery
+        timestamp created_at
+        timestamp updated_at
+        int quota_color_parts
+        int quota_main_parts
+        int quota_sub_parts
+    }
+
+    rizenicstatusmaster {
+        varchar status_code PK
+        varchar status_name
+        varchar department
+        varchar route_page
+    }
+
+    rizenicinsurancemaster {
+        varchar insurance_code PK
+        varchar insurance_name
+        varchar insurance_type
+    }
+
+    rizeniccarmodelmaster {
+        bigint model_id PK
+        varchar car_brand
+        varchar car_model
+    }
+
+    rizeniccustomertypemaster {
+        bigint customer_type_id PK
+        varchar type_code
+        varchar type_name
+    }
+
+    customers {
+        int id PK
+        varchar customer_name
+        varchar phone_number
+        timestamp created_at
+    }
+
+    user_column_preferences {
+        int user_id PK
+        varchar emp_name
+        jsonb hidden_columns
+        timestamp updated_at
+    }
+
+    %% Relationships
+    rizenicreport ||--o{ rizenic_part_orders : "1:N (job_id)"
+    rizenicreport ||--o{ inspection_reports : "1:N (job_id)"
+    rizenicreport ||--o{ eclaim_general : "1:1 (job_id)"
+    rizenicreport ||--o{ eclaim_line_items : "1:N (job_id)"
+    rizenicreport ||--o{ rizenic_part_outbound : "1:N (job_id)"
+    rizenicpartsmaster ||--o{ rizenic_part_locations : "1:N (part_no)"
+                        </pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: DATA DICTIONARY -->
+        <section class="space-y-8">
+            <div>
+                <span class="text-xs font-bold text-blue-600 tracking-widest uppercase">Schema Reference</span>
+                <h2 class="text-2xl font-extrabold text-[#0F172A] mt-1">2. Data Dictionary & Table Structures</h2>
+                <p class="text-slate-500 text-sm font-light">คำอธิบายรายละเอียดตาราง ชนิดข้อมูล และหน้าที่การทำงานของแต่ละตารางในระบบ</p>
+            </div>
+
+            <!-- GROUP 1: CORE TRANSACTIONS -->
+            <div class="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 shadow-sm space-y-6">
+                <div class="flex items-center gap-3 border-b border-slate-100 pb-4">
+                    <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-lg"><i class="fa-solid fa-file-invoice"></i></div>
+                    <div>
+                        <h3 class="font-extrabold text-[#0F172A] text-lg">Group 1: Core Operations & Transactions</h3>
+                        <p class="text-xs text-slate-500">ตารางหลักที่บันทึกการทำงานหน้างานและการไหลของใบงานซ่อม</p>
+                    </div>
+                </div>
+
+                <!-- TABLE: rizenicreport -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h4 class="font-mono-code font-bold text-sm text-blue-600 bg-blue-50 px-3 py-1 rounded-lg border border-blue-200 inline-block">
+                            rizenicreport (ใบงานซ่อมหลัก)
+                        </h4>
+                        <span class="text-xs text-slate-400 font-mono">Type: Transaction Table</span>
+                    </div>
+                    <div class="overflow-x-auto border border-slate-200 rounded-2xl">
+                        <table class="w-full text-xs text-left font-mono-code">
+                            <thead class="bg-slate-100 text-slate-700 border-b border-slate-200">
+                                <tr>
+                                    <th class="p-3">Column Name</th>
+                                    <th class="p-3">Data Type</th>
+                                    <th class="p-3">Key</th>
+                                    <th class="p-3 font-sans">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 bg-white">
+                                <tr><td class="p-3 font-bold text-blue-600">id</td><td class="p-3 text-slate-500">BIGINT</td><td class="p-3"><span class="bg-amber-100 text-amber-800 font-sans px-2 py-0.5 rounded font-bold">PK</span></td><td class="p-3 font-sans">รหัสใบงาน (Job ID) ประจำระบบ</td></tr>
+                                <tr><td class="p-3 font-bold">sa_owner</td><td class="p-3 text-slate-500">VARCHAR</td><td class="p-3 text-slate-400">-</td><td class="p-3 font-sans">ชื่อ Service Advisor ผู้รับผิดชอบ</td></tr>
+                                <tr><td class="p-3 font-bold">branch_name</td><td class="p-3 text-slate-500">VARCHAR</td><td class="p-3 text-slate-400">-</td><td class="p-3 font-sans">ชื่อสาขาที่รับบริการ (เช่น รังสิต, นวมินทร์)</td></tr>
+                                <tr><td class="p-3 font-bold">car_plate</td><td class="p-3 text-slate-500">VARCHAR</td><td class="p-3 text-slate-400">-</td><td class="p-3 font-sans">ทะเบียนรถยนต์</td></tr>
+                                <tr><td class="p-3 font-bold">job_status</td><td class="p-3 text-slate-500">VARCHAR</td><td class="p-3 text-emerald-600">FK (Logical)</td><td class="p-3 font-sans">สถานะงานซ่อมปัจจุบัน (เชื่อมกับ rizenicstatusmaster)</td></tr>
+                                <tr><td class="p-3 font-bold">main_part_qty / sub_part_qty</td><td class="p-3 text-slate-500">INTEGER</td><td class="p-3 text-slate-400">-</td><td class="p-3 font-sans">จำนวนชิ้นงานทำสีหลัก และ ชิ้นงานรอง (ใช้คำนวณ Quota)</td></tr>
+                                <tr><td class="p-3 font-bold">cost_labor / cost_part / cost_external</td><td class="p-3 text-slate-500">NUMERIC</td><td class="p-3 text-slate-400">-</td><td class="p-3 font-sans">สรุปยอดค่าแรง ค่าอะไหล่ และค่าบริการงานนอก</td></tr>
+                                <tr><td class="p-3 font-bold">station_kho..station_ready</td><td class="p-3 text-slate-500">BOOLEAN</td><td class="p-3 text-slate-400">-</td><td class="p-3 font-sans">ฟิล์ด Checkbox ติดตามสถานะในแต่ละสถานีช่าง (10 สถานี)</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- TABLE: rizenic_part_orders -->
+                <div class="space-y-3 pt-4">
+                    <div class="flex items-center justify-between">
+                        <h4 class="font-mono-code font-bold text-sm text-purple-600 bg-purple-50 px-3 py-1 rounded-lg border border-purple-200 inline-block">
+                            rizenic_part_orders (รายการเบิก/สั่งอะไหล่รายชิ้น)
+                        </h4>
+                        <span class="text-xs text-slate-400 font-mono">Type: Detail Transaction Table</span>
+                    </div>
+                    <div class="overflow-x-auto border border-slate-200 rounded-2xl">
+                        <table class="w-full text-xs text-left font-mono-code">
+                            <thead class="bg-slate-100 text-slate-700 border-b border-slate-200">
+                                <tr>
+                                    <th class="p-3">Column Name</th>
+                                    <th class="p-3">Data Type</th>
+                                    <th class="p-3">Key</th>
+                                    <th class="p-3 font-sans">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 bg-white">
+                                <tr><td class="p-3 font-bold text-purple-600">order_id</td><td class="p-3 text-slate-500">BIGINT</td><td class="p-3"><span class="bg-amber-100 text-amber-800 font-sans px-2 py-0.5 rounded font-bold">PK</span></td><td class="p-3 font-sans">รหัสออเดอร์สั่งเบิกอะไหล่</td></tr>
+                                <tr><td class="p-3 font-bold text-emerald-600">job_id</td><td class="p-3 text-slate-500">BIGINT</td><td class="p-3"><span class="bg-emerald-100 text-emerald-800 font-sans px-2 py-0.5 rounded font-bold">FK</span></td><td class="p-3 font-sans">เชื่อมโยงกับใบงานหลัก rizenicreport(id)</td></tr>
+                                <tr><td class="p-3 font-bold">part_no / part_name</td><td class="p-3 text-slate-500">VARCHAR</td><td class="p-3 text-emerald-600">FK (Logical)</td><td class="p-3 font-sans">รหัสและชื่ออะไหล่ที่สั่งเบิก</td></tr>
+                                <tr><td class="p-3 font-bold">qty_ordered / qty_received</td><td class="p-3 text-slate-500">INTEGER</td><td class="p-3 text-slate-400">-</td><td class="p-3 font-sans">จำนวนที่สั่งเบิก และ จำนวนที่ได้รับเข้าจริง</td></tr>
+                                <tr><td class="p-3 font-bold">order_status</td><td class="p-3 text-slate-500">VARCHAR</td><td class="p-3 text-slate-400">-</td><td class="p-3 font-sans">สถานะคิวอะไหล่ (เช่น รอสั่งซื้อ, อะไหล่มาครบแล้ว)</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GROUP 2: INVENTORY & STOCK -->
+            <div class="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 shadow-sm space-y-6">
+                <div class="flex items-center gap-3 border-b border-slate-100 pb-4">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-lg"><i class="fa-solid fa-boxes-stacked"></i></div>
+                    <div>
+                        <h3 class="font-extrabold text-[#0F172A] text-lg">Group 2: Inventory & Warehouse Master</h3>
+                        <p class="text-xs text-slate-500">ตารางคลังสินค้า Master และประวัติการรับเข้า-จ่ายออก</p>
+                    </div>
+                </div>
+
+                <div class="grid lg:grid-cols-2 gap-6">
+                    <div class="border border-slate-200 rounded-2xl p-4 space-y-2 bg-slate-50/50">
+                        <h4 class="font-mono-code font-bold text-xs text-slate-800">rizenicpartsmaster</h4>
+                        <p class="text-xs text-slate-600 font-sans">ตารางมาสเตอร์อะไหล่หลัก เก็บ `part_no` (Unique), `part_name`, `unit_price` และ `car_model`</p>
+                    </div>
+                    <div class="border border-slate-200 rounded-2xl p-4 space-y-2 bg-slate-50/50">
+                        <h4 class="font-mono-code font-bold text-xs text-slate-800">rizenic_part_locations</h4>
+                        <p class="text-xs text-slate-600 font-sans">ระบุตำแหน่งจัดเก็บ (`location`) และ `safety_stock` ของอะไหล่แต่ละชิ้นแยกรายสาขา</p>
+                    </div>
+                    <div class="border border-slate-200 rounded-2xl p-4 space-y-2 bg-slate-50/50">
+                        <h4 class="font-mono-code font-bold text-xs text-slate-800">rizenic_part_inbound</h4>
+                        <p class="text-xs text-slate-600 font-sans">ประวัติการรับเข้าอะไหล่เข้าคลัง (Stock In) บันทึกวันที่รับ รหัส EPC จำนวน และราคาทุน</p>
+                    </div>
+                    <div class="border border-slate-200 rounded-2xl p-4 space-y-2 bg-slate-50/50">
+                        <h4 class="font-mono-code font-bold text-xs text-slate-800">rizenic_part_outbound</h4>
+                        <p class="text-xs text-slate-600 font-sans">ประวัติการเบิกจ่ายอะไหล่ออกจากคลัง (Stock Out) ผูกกับทะเบียนรถและเลข SO</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GROUP 3: CONFIGURATION & MASTER -->
+            <div class="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 shadow-sm space-y-6">
+                <div class="flex items-center gap-3 border-b border-slate-100 pb-4">
+                    <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center font-bold text-lg"><i class="fa-solid fa-sliders"></i></div>
+                    <div>
+                        <h3 class="font-extrabold text-[#0F172A] text-lg">Group 3: Configuration & System Rule Masters</h3>
+                        <p class="text-xs text-slate-500">ตารางตั้งค่าระบบ ควบคุมสิทธิ์ และกฎทางธุรกิจ (Business Rules)</p>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-4 text-xs">
+                    <div class="border border-slate-200 rounded-xl p-3 bg-white">
+                        <span class="font-mono-code font-bold text-amber-700 block mb-1">rizenic_quotas</span>
+                        <p class="text-slate-500 font-sans">กำหนดโควต้ารับรถและจำนวนชิ้นงานซ่อมสีสูงสุดประจำวัน/วันพิเศษ แยกตามสาขา</p>
+                    </div>
+                    <div class="border border-slate-200 rounded-xl p-3 bg-white">
+                        <span class="font-mono-code font-bold text-blue-700 block mb-1">rizenicemployeemaster</span>
+                        <p class="text-slate-500 font-sans">ข้อมูลพนักงาน รหัสผ่าน รหัสสาขา และสิทธิ์เข้าถึงเพจ (`accessible_pages`)</p>
+                    </div>
+                    <div class="border border-slate-200 rounded-xl p-3 bg-white">
+                        <span class="font-mono-code font-bold text-purple-700 block mb-1">rizenicstatusmaster</span>
+                        <p class="text-slate-500 font-sans">มาสเตอร์สเตตัสหลัก ผูกกับแผนกที่รับผิดชอบและเพจ Dynamic Routing</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: KEY RELATIONSHIPS & BUSINESS LOGIC -->
+        <section class="bg-[#0F172A] text-white rounded-3xl p-8 md:p-10 shadow-xl space-y-6">
+            <div class="border-b border-slate-800 pb-4">
+                <span class="text-xs font-bold text-amber-400 tracking-widest uppercase">Referential Integrity</span>
+                <h2 class="text-2xl font-extrabold text-white mt-1">3. Logical Relationships & Constraints</h2>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6 text-xs leading-relaxed font-light">
+                <div class="bg-slate-800/60 border border-slate-700/80 p-5 rounded-2xl space-y-2">
+                    <div class="font-bold text-blue-400 text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-link"></i> 1. Job to Orders Relationship (1 : N)
+                    </div>
+                    <p class="text-slate-300">
+                        ใบงานซ่อมหลัก 1 ใบ (`rizenicreport.id`) สามารถมีรายการสั่งเบิกอะไหล่ในตาราง `rizenic_part_orders` ได้หลายชิ้น โดยใช้ `job_id` เป็น Foreign Key ในการเชื่อมโยง
+                    </p>
+                </div>
+
+                <div class="bg-slate-800/60 border border-slate-700/80 p-5 rounded-2xl space-y-2">
+                    <div class="font-bold text-emerald-400 text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-shield-halved"></i> 2. Dynamic Quota Enforcement
+                    </div>
+                    <p class="text-slate-300">
+                        ก่อนทำการ `INSERT` หรือ `UPDATE` ใบงานซ่อม ระบบจะรันฟังก์ชัน `checkColorPartsQuota()` นำสาขาและวันที่รับรถไปคำนวณ `SUM(main_part_qty)` จาก `rizenicreport` เทียบกับขีดจำกัดใน `rizenic_quotas`
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-[#0F172A] text-slate-500 text-xs py-8 text-center border-t border-slate-800">
+        <p>&copy; 2026 PANICH TIMAYOM. RIZENIC ERP DATABASE DOCUMENTATION.</p>
+    </footer>
+
+    <!-- JS FOR PAN & ZOOM -->
+    <script>
+        let scale = 1;
+        let translateX = 0;
+        let translateY = 0;
+        let isDragging = false;
+        let startX, startY;
+        
+        const container = document.getElementById('erd-container');
+        const wrapper = document.getElementById('erd-wrapper');
+
+        function updateTransform() {
+            wrapper.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+        }
+
+        function zoom(delta) {
+            scale += delta;
+            if (scale < 0.2) scale = 0.2;
+            if (scale > 5) scale = 5;
+            updateTransform();
+        }
+
+        function resetZoomPan() {
+            scale = 1;
+            translateX = 0;
+            translateY = 0;
+            updateTransform();
+        }
+
+        container.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startX = e.clientX - translateX;
+            startY = e.clientY - translateY;
+            container.style.cursor = 'grabbing';
+        });
+
+        window.addEventListener('mouseup', () => {
+            isDragging = false;
+            container.style.cursor = 'grab';
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            e.preventDefault();
+            translateX = e.clientX - startX;
+            translateY = e.clientY - startY;
+            updateTransform();
+        });
+
+        container.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? -0.1 : 0.1;
+            zoom(delta);
+        }, { passive: false });
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                container.requestFullscreen().catch(err => {
+                    alert(`Error attempting to enable full-screen mode: ${err.message}`);
+                });
+                container.style.height = '100vh';
+                container.classList.remove('rounded-2xl');
+            } else {
+                document.exitFullscreen();
+                container.style.height = '75vh';
+                container.classList.add('rounded-2xl');
+            }
+        }
+        
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement) {
+                container.style.height = '75vh';
+                container.classList.add('rounded-2xl');
+            }
+        });
+
+        // INITIALIZE MERMAID.JS 
+        // ปิด useMaxWidth เพื่อให้ไดอะแกรมเรนเดอร์ขนาดจริงแบบไม่ถูกบีบ
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'neutral',
+            securityLevel: 'loose',
+            er: {
+                useMaxWidth: false,
+                layoutDirection: 'TB'
+            }
+        });
+    </script>
+</body>
+</html>
